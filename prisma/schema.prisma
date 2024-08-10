@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String      @id @default(cuid())
+  email       String      @unique
+  UsersGroups UserGroup[]
+
+  @@map("users")
+}
+
+model Session {
+  id       String @id @default(cuid())
+  ip       String
+  port     String
+  username String
+  password String
+
+  @@map("sessions")
+}
+
+model Group {
+  id          String      @id @default(cuid())
+  name        String
+  UsersGroups UserGroup[]
+
+  @@map("groups")
+}
+
+model UserGroup {
+  id       String @id @default(cuid())
+  user_id  String
+  group_id String
+
+  user                User               @relation(fields: [user_id], references: [id])
+  group               Group              @relation(fields: [group_id], references: [id])
+  UsersGroupsSessions UserGroupSession[]
+
+  @@map("users_groups")
+}
+
+model UserGroupSession {
+  id            String @id @default(cuid())
+  user_group_id String
+
+  user_group UserGroup @relation(fields: [user_group_id], references: [id])
+
+  @@map("users_groups_sessions")
+}

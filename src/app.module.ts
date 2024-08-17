@@ -8,6 +8,7 @@ import { SessionService } from './session/session.service';
 import { SessionGateway } from './session/session.gateway';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { SessionController } from './session/session.controller';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { join } from 'path';
       rootPath: join(__dirname, '..', 'poc', 'novnc')
     })
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, UserController, SessionController],
   providers: [AppService, PrismaService, UserService, SessionService, SessionGateway],
 })
 export class AppModule {}

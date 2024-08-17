@@ -27,6 +27,7 @@ model Session {
   port     String
   username String
   password String
+  title    String
 
   @@map("sessions")
 }

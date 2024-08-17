@@ -2,13 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Client } from "ssh2"
 import { SessionGateway } from './session.gateway';
 import { Socket } from 'socket.io';
+import { Session } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateSessionDto } from 'src/dto/session.dto';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class SessionService {
     private client: Client = new Client();
     private logger: Logger = new Logger("session.service")
 
-    constructor() { }
+    constructor(private readonly prismaService: PrismaService) { }
 
     otherMethod() {
         return "otherMethod"
@@ -62,4 +66,30 @@ export class SessionService {
 
         return content;
     }
+
+    async createNewSession(sessionData: CreateSessionDto) {
+        try {
+            const { host, password, port, title, username } = sessionData;
+
+            const session: Session = {
+                id: randomUUID(),
+                ip: host,
+                password,
+                port: port.toString(),
+                title,
+                username
+            }
+
+            const newSession = await this.prismaService.session.create({
+                data: session,
+            });
+
+            return newSession;
+        } catch (error: any) {
+            this.logger.error("Houve um erro ao criar uma nova sessão.");
+            throw error;
+        }
+    }
+
+    
 }

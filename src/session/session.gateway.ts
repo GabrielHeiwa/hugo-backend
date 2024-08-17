@@ -15,13 +15,14 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect,
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger("session.gateway")
 
-  @SubscribeMessage('messageToServer')
+  @SubscribeMessage('ssh-receiving-message')
   async handleMessage(client: Socket, payload: any): Promise<void> {
-    this.sessionService.otherMethod();
-    const output = await this.sessionService.sendCommand(payload, client);
-    this.server.emit("messageToClient", output, client.id);
-    this.logger.debug(output);
-    return;
+    
+
+    // const output = await this.sessionService.sendCommand(payload, client);
+    // this.server.emit("messageToClient", output, client.id);
+    // this.logger.debug(output);
+    // return;
   }
 
   sendMessage(message: string, socketId: string): void {
@@ -32,6 +33,7 @@ export class SessionGateway implements OnGatewayConnection, OnGatewayDisconnect,
 
     this.logger.log(`Client ${client.id} has been connect`)
   }
+  
   handleDisconnect(client: Socket) {
     
     this.logger.log(`Client ${client.id} has been disconnect`)

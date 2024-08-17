@@ -7,16 +7,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSessionDto } from 'src/dto/session.dto';
 import { randomUUID } from 'crypto';
 
+type SshConnection = {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+}
+
 @Injectable()
 export class SessionService {
     private client: Client = new Client();
     private logger: Logger = new Logger("session.service")
 
     constructor(private readonly prismaService: PrismaService) { }
-
-    otherMethod() {
-        return "otherMethod"
-    }
 
     async conn() {
         this.client.connect({
@@ -91,5 +94,72 @@ export class SessionService {
         }
     }
 
+    async connectSession(sessionId: string) {
+        // Get session data
+
+        // Open connection to session
+
+        // Send OK by WebSockets
+
+        try {
+            const { ip, port, username, password } = await this.prismaService.session.findUnique({
+                where: {
+                    id: sessionId
+                }
+            });
+
+            const sshSettings: SshConnection = {
+                host: ip,
+                port: Number(port),
+                username,
+                password
+            };
+            
+            const sshConnectionResponse = this.sshConnection(sshSettings);
+            if (!sshConnectionResponse) throw new Error("Conexão SSH não estabelecida.");
+
+            return true;
+
+        } catch (error: any) {
+            this.logger.error("Houve um erro ao connectar na sessão.");
+            throw error;
+        }
+    }
+
+    private async sshConnection(
+        {
+            host,
+            password,
+            port,
+            username
+        }: SshConnection
+    ) {
+        try {
+            this.client.connect({
+                host,
+                port,
+                username,
+                password,
+            });
     
+            const response = await new Promise((resolve, reject) => {
+                this.client.on("error", error => {
+                    this.logger.error(error)
+    
+                    reject(error);
+                })
+        
+                this.client.on("ready", () => {
+                    this.logger.log('Client :: ready');
+    
+                    resolve(true)
+                })
+            });
+
+            return response;
+        } catch (error: any) {
+            this.logger.error("Houve um erro na conexão SSH.");
+            throw error;
+        }
+    }
 }
